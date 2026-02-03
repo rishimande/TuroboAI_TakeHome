@@ -1,0 +1,273 @@
+---
+description: Next.js, React, TypeScript, and Tailwind CSS best practices
+globs: frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Next.js + React Development Guidelines
+
+You are an expert in TypeScript, Node.js, Next.js App Router, React, Shadcn UI, Tailwind CSS, and Framer Motion.
+
+## Code Style and Structure
+
+- Write concise, technical TypeScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`).
+- Structure files: exported component, subcomponents, helpers, static content, types.
+
+**Example:**
+
+```typescript
+// ✅ GOOD - Clear structure
+export default function UserProfile({ userId }: { userId: string }) {
+  const { data, isLoading } = useUser(userId);
+  
+  if (isLoading) return <LoadingSkeleton />;
+  return <ProfileCard user={data} />;
+}
+
+function LoadingSkeleton() {
+  return <div className="animate-pulse">...</div>;
+}
+```
+
+## Naming Conventions
+
+- All components should go in `src/components` and be named like `new-component.tsx`.
+- Use lowercase with dashes for directories (e.g., `components/auth-wizard`).
+- Favor named exports for components.
+
+**Example:**
+
+```typescript
+// ✅ GOOD
+// File: src/components/user-profile.tsx
+export function UserProfile() { /* ... */ }
+
+// ❌ BAD
+// File: src/components/UserProfile.tsx
+export default function UserProfile() { /* ... */ }
+```
+
+## TypeScript Usage
+
+- Use TypeScript for all code; prefer interfaces over types.
+- Avoid enums; use maps instead.
+- Use functional components with TypeScript interfaces.
+
+**Example:**
+
+```typescript
+// ✅ GOOD
+interface UserProps {
+  name: string;
+  email: string;
+  isActive: boolean;
+}
+
+const USER_ROLES = {
+  ADMIN: "admin",
+  USER: "user",
+  GUEST: "guest",
+} as const;
+
+// ❌ BAD
+type UserProps = {
+  name: string;
+  email: string;
+  isActive: boolean;
+}
+
+enum UserRole {
+  ADMIN = "admin",
+  USER = "user",
+  GUEST = "guest",
+}
+```
+
+## Syntax and Formatting
+
+- Use the `function` keyword for pure functions.
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Use declarative JSX.
+
+**Example:**
+
+```typescript
+// ✅ GOOD
+function calculateTotal(items: Item[]) {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+if (isLoading) return <Spinner />;
+
+// ❌ BAD
+const calculateTotal = (items: Item[]) => {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+if (isLoading) {
+  return <Spinner />;
+}
+```
+
+## UI and Styling
+
+- Use Shadcn UI and Tailwind CSS for components and styling.
+- Implement responsive design with Tailwind CSS; use a mobile-first approach.
+
+**Example:**
+
+```tsx
+// ✅ GOOD - Mobile-first responsive design
+<div className="w-full px-4 md:px-6 lg:px-8">
+  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">
+    Welcome
+  </h1>
+</div>
+```
+
+## Performance Optimization
+
+- Minimize `use client`, `useEffect`, and `setState`; favor React Server Components (RSC).
+- Wrap client components in Suspense with fallback.
+- Use dynamic loading for non-critical components.
+- Optimize images: use WebP format, include size data, implement lazy loading.
+
+**Example:**
+
+```typescript
+// ✅ GOOD - Server Component (default)
+export default async function BlogPost({ params }: { params: { id: string } }) {
+  const post = await fetchPost(params.id);
+  return <article>{post.content}</article>;
+}
+
+// ✅ GOOD - Client component only when needed
+"use client";
+
+import { Suspense } from "react";
+
+export function InteractiveWidget() {
+  return (
+    <Suspense fallback={<WidgetSkeleton />}>
+      <Widget />
+    </Suspense>
+  );
+}
+
+// ❌ BAD - Unnecessary client component
+"use client";
+
+export default function StaticContent() {
+  return <div>This doesn't need client-side JS</div>;
+}
+```
+
+## Key Conventions
+
+- Use `nuqs` for URL search parameter state management.
+- Optimize Web Vitals (LCP, CLS, FID).
+- Limit `use client`:
+  - Favor server components and Next.js SSR.
+  - Use only for Web API access in small components.
+  - Avoid for data fetching or state management.
+- Follow Next.js docs for Data Fetching, Rendering, and Routing.
+- Use `https://placekitten.com/` for placeholder images in seed data.
+
+## Project Organization
+
+Place both `/app` and `/components` folders under a `/src` directory:
+
+```
+/src
+├── /app
+│   ├── /page.tsx
+│   ├── /layout.tsx
+│   └── /api
+├── /components
+│   ├── /ui
+│   │   ├── /button.tsx
+│   │   ├── /modal.tsx
+│   │   └── /card.tsx
+│   ├── /forms
+│   │   ├── /text-field.tsx
+│   │   └── /select.tsx
+│   └── /layout
+│       ├── /navbar.tsx
+│       └── /footer.tsx
+└── /lib
+    └── /utils.ts
+```
+
+### Components Organization
+
+**By Type:** Group components like forms, buttons, layout elements.
+
+**By Feature:** For larger apps, group components by feature/domain.
+
+**Private Components:** For page-specific components, create `_components` folder within `/app` subdirectory.
+
+**Shared Components:** `/src/components` contains reusable components across pages.
+
+**Example:**
+
+```typescript
+// ✅ GOOD - Shared component
+// File: src/components/ui/button.tsx
+export function Button({ children, ...props }: ButtonProps) {
+  return <button className="btn" {...props}>{children}</button>;
+}
+
+// ✅ GOOD - Private component
+// File: app/dashboard/_components/stats-card.tsx
+export function StatsCard({ title, value }: StatsCardProps) {
+  return <div className="card">...</div>;
+}
+```
+
+## Data Fetching
+
+- Use Next.js App Router data fetching patterns.
+- Fetch data in Server Components when possible.
+- Use React Server Actions for mutations.
+
+**Example:**
+
+```typescript
+// ✅ GOOD - Server Component data fetching
+export default async function UsersPage() {
+  const users = await db.user.findMany();
+  return <UserList users={users} />;
+}
+
+// ✅ GOOD - Server Action for mutation
+"use server";
+
+export async function createUser(formData: FormData) {
+  const name = formData.get("name") as string;
+  await db.user.create({ data: { name } });
+  revalidatePath("/users");
+}
+```
+
+## Error Handling
+
+- Use error boundaries for runtime errors.
+- Handle loading and error states explicitly.
+- Provide meaningful error messages.
+
+**Example:**
+
+```typescript
+// ✅ GOOD
+export default async function UserProfile({ userId }: { userId: string }) {
+  try {
+    const user = await fetchUser(userId);
+    return <ProfileCard user={user} />;
+  } catch (error) {
+    return <ErrorMessage message="Failed to load user profile" />;
+  }
+}
+```

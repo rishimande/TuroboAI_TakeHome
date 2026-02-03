@@ -1,0 +1,192 @@
+---
+description: Django backend development standards and best practices
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Django Backend Guidelines
+
+You are an expert in Python, Django, and scalable backend development.
+Django is used strictly as a backend layer (APIs, services, admin, background jobs). Avoid frontend rendering concerns.
+
+## Python Style
+
+- Follow PEP 8 with a 120 character line limit.
+- Use double quotes for all Python strings.
+- Use f-strings for string formatting.
+- Sort imports with isort (group stdlib, third-party, local; alphabetical within groups).
+- Prefer explicit, readable code over clever abstractions.
+
+## Django Principles
+
+- Prefer Django built-in features before adding third-party packages.
+- Prioritize security and follow Django security best practices.
+- Use the Django ORM; avoid raw SQL unless there is a proven capability or performance gap.
+- Keep business logic out of views; place it in services or domain modules.
+
+## Models
+
+- Add `__str__` to every model.
+- Use `related_name` on foreign keys when relationships are non-trivial or multiple FKs point to the same model.
+- Use `Meta` for ordering, indexes, constraints, and `verbose_name` where appropriate.
+- Use `blank=True` for optional validation/form fields.
+- Use `null=True` only when database NULL is truly required (not as a default).
+- Prefer explicit constraints (`UniqueConstraint`, `CheckConstraint`) over implicit assumptions.
+
+**Example:**
+
+```python
+# ✅ GOOD
+class Article(models.Model):
+    title = models.CharField(max_length=200)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="articles")
+    published_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ["-published_at"]
+        indexes = [models.Index(fields=["published_at"])]
+    
+    def __str__(self):
+        return self.title
+```
+
+## ORM & Database
+
+- Optimize queries with `select_related` and `prefetch_related`.
+- Avoid N+1 queries; check query counts in tests where appropriate.
+- Add indexes for frequently filtered, ordered, or joined fields.
+- Keep complex query logic in custom QuerySets/Managers.
+
+**Example:**
+
+```python
+# ❌ BAD - N+1 query
+articles = Article.objects.all()
+for article in articles:
+    print(article.author.name)  # Hits DB each time
+
+# ✅ GOOD
+articles = Article.objects.select_related("author").all()
+for article in articles:
+    print(article.author.name)  # Single query
+```
+
+## Views / API Layer
+
+- Django is primarily an API layer.
+- Always validate and sanitize user input.
+- Use `get_object_or_404` for object retrieval by identifiers.
+- Handle exceptions gracefully (try/except) and return consistent error responses.
+- Implement pagination for list endpoints.
+- Keep view code thin; call service-layer functions for workflows.
+- Maintain consistency in view style: prefer class-based views for structured/reusable APIs unless the codebase standard is FBVs.
+
+**Example:**
+
+```python
+# ✅ GOOD
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(["GET"])
+def get_article(request, article_id):
+    article = get_object_or_404(Article, id=article_id)
+    serializer = ArticleSerializer(article)
+    return Response(serializer.data)
+```
+
+## URLs
+
+- Use descriptive URL names for reverse lookups.
+- Always end URL patterns with a trailing slash.
+- Version APIs explicitly (e.g., `/api/v1/...`).
+- Keep URL structures stable and predictable.
+
+**Example:**
+
+```python
+# ✅ GOOD
+urlpatterns = [
+    path("api/v1/articles/", ArticleListView.as_view(), name="article-list"),
+    path("api/v1/articles/<int:pk>/", ArticleDetailView.as_view(), name="article-detail"),
+]
+```
+
+## Validation (Backend)
+
+- Use ModelForms primarily for Django admin or internal workflows.
+- For APIs, prefer serializer-style validation (e.g., DRF serializers) with explicit, testable rules.
+- Never rely on client-side validation for correctness or security.
+
+## Signals
+
+- Use signals sparingly.
+- Document triggers and side effects.
+- Do not implement core business workflows purely via signals; prefer explicit service calls.
+
+## Settings & Configuration
+
+- Use environment variables with a single `settings.py` (no multiple settings modules).
+- Never commit secrets to version control.
+- Fail fast if required environment variables are missing.
+- Preferred env tooling: `django-environ` or `python-decouple`; `direnv` for local development.
+
+## Migrations
+
+- Use migrations for all schema changes.
+- Keep migrations small and review them before applying.
+- Never manually edit production databases.
+
+## Testing
+
+- Always write unit tests for new backend features.
+- Test positive paths, failure modes, and permission boundaries.
+- Mock external services and integrations.
+- Ensure tests pass in CI before merging.
+- Prefer pytest + pytest-django if the project standard allows; otherwise use Django's test framework consistently.
+
+**Example:**
+
+```python
+# ✅ GOOD
+from django.test import TestCase
+from .models import Article
+
+class ArticleTestCase(TestCase):
+    def test_article_creation(self):
+        article = Article.objects.create(title="Test Article")
+        self.assertEqual(str(article), "Test Article")
+    
+    def test_article_requires_title(self):
+        with self.assertRaises(Exception):
+            Article.objects.create()
+```
+
+## Logging & Observability
+
+- Use structured logging.
+- Log errors, external API failures, and background job failures.
+- Do not log secrets or sensitive user data.
+- Logs should be production-debuggable without being noisy.
+
+**Example:**
+
+```python
+# ✅ GOOD
+import logging
+
+logger = logging.getLogger(__name__)
+
+try:
+    result = external_api.fetch_data()
+except Exception as e:
+    logger.error("Failed to fetch external data", extra={"error": str(e)})
+    raise
+```
+
+## Security (General)
+
+- Enforce authentication and authorization.
+- Use Django security features (secure cookies, password hashing, CSRF where applicable).
+- Validate all external input and log security-relevant events safely.
