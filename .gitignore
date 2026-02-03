@@ -1,0 +1,6 @@
+# Ignore the entire .cursor directory
+.cursor/*
+
+# But allow the rules folder and its contents to be tracked
+!.cursor/rules/
+!.cursor/rules/**
