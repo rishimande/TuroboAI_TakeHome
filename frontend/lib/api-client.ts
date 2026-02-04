@@ -73,6 +73,23 @@ export interface Category {
   updated_at: string;
 }
 
+// Note types
+export interface Note {
+  id: string;
+  category: string;
+  category_name: string;
+  category_color: string;
+  title: string;
+  content: string;
+  created_at: string;
+  last_edited_at: string;
+}
+
+export interface NoteDetail extends Note {
+  user: string;
+  updated_at: string;
+}
+
 // Authentication API functions
 export const authApi = {
   // Sign up a new user
@@ -105,6 +122,22 @@ export const categoriesApi = {
   // Get all categories
   getCategories: async (): Promise<Category[]> => {
     const response = await apiClient.get<Category[]>("/categories/");
+    return response.data;
+  },
+};
+
+// Notes API functions
+export const notesApi = {
+  // Get all notes, optionally filtered by category
+  getNotes: async (categoryId?: string): Promise<Note[]> => {
+    const params = categoryId ? { categoryId } : {};
+    const response = await apiClient.get<Note[]>("/notes/", { params });
+    return response.data;
+  },
+
+  // Get a single note by ID
+  getNote: async (id: string): Promise<NoteDetail> => {
+    const response = await apiClient.get<NoteDetail>(`/notes/${id}/`);
     return response.data;
   },
 };
