@@ -126,6 +126,18 @@ export const categoriesApi = {
   },
 };
 
+export interface CreateNoteRequest {
+  category: string;
+  title?: string;
+  content?: string;
+}
+
+export interface UpdateNoteRequest {
+  category?: string;
+  title?: string;
+  content?: string;
+}
+
 // Notes API functions
 export const notesApi = {
   // Get all notes, optionally filtered by category
@@ -138,6 +150,18 @@ export const notesApi = {
   // Get a single note by ID
   getNote: async (id: string): Promise<NoteDetail> => {
     const response = await apiClient.get<NoteDetail>(`/notes/${id}/`);
+    return response.data;
+  },
+
+  // Create a new note
+  createNote: async (data: CreateNoteRequest): Promise<NoteDetail> => {
+    const response = await apiClient.post<NoteDetail>("/notes/", data);
+    return response.data;
+  },
+
+  // Update an existing note
+  updateNote: async (id: string, data: UpdateNoteRequest): Promise<NoteDetail> => {
+    const response = await apiClient.patch<NoteDetail>(`/notes/${id}/`, data);
     return response.data;
   },
 };
