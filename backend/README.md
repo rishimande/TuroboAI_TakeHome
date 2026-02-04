@@ -1,138 +1,88 @@
-# Notes App Backend
+# Notes App - Django Backend
 
-Django backend for the Notes App MVP.
+Backend API for the Notes Taking Application built with Django 4.2 and Django REST Framework.
 
 ## Tech Stack
 
 - Python 3.12
 - Django 4.2 LTS
 - Django REST Framework
-- SQLite (in-memory)
+- SQLite (in-memory database)
+- Argon2 for password hashing
 
-## Setup Instructions
+## Setup
 
-### 1. Create Virtual Environment
-
+1. Create a virtual environment and activate it:
 ```bash
-python3.12 -m venv venv
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-### 2. Install Dependencies
-
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Environment Configuration
-
-Copy the example environment file:
-
+3. Copy the example environment file:
 ```bash
 cp .env.example .env
 ```
 
-Update `.env` with your configuration if needed.
-
-### 4. Run Migrations
-
+4. Run migrations:
 ```bash
 python manage.py migrate
 ```
 
-### 5. Seed Default Categories
-
+5. Populate default categories:
 ```bash
-python manage.py seed_categories
+python manage.py populate_categories
 ```
 
-This creates the default categories: Random Thoughts, School, and Personal.
-
-### 6. Create Superuser (Optional)
-
+6. Create a superuser (optional):
 ```bash
 python manage.py createsuperuser
 ```
 
-### 7. Run Development Server
-
+7. Run the development server:
 ```bash
 python manage.py runserver
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:8000/api/`
 
 ## API Endpoints
 
 ### Authentication
-
-- `POST /auth/signup/` - Register a new user
-- `POST /auth/login/` - Log in an existing user
-- `POST /auth/logout/` - Log out the current user
-- `GET /auth/me/` - Get current user details
+- `POST /api/auth/signup/` - Register a new user
+- `POST /api/auth/login/` - Login with email and password
+- `POST /api/auth/logout/` - Logout current user
+- `GET /api/auth/me/` - Get current user info
 
 ### Categories
+- `GET /api/categories/` - Get all categories with note counts
 
-- `GET /categories/` - List all categories (requires authentication)
+### Notes
+- `GET /api/notes/` - Get all notes (supports `?categoryId=<uuid>` filter)
+- `POST /api/notes/create/` - Create a new note
+- `GET /api/notes/<uuid>/` - Get note details
+- `PATCH /api/notes/<uuid>/update/` - Update a note
 
-### Example Requests
+## Models
 
-#### Sign Up
+### User
+- Custom user model using email as username
+- Fields: id (UUID), email, password_hash, created_at, updated_at
 
-```bash
-curl -X POST http://localhost:8000/auth/signup/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "SecurePass123"
-  }'
-```
+### Category
+- Fields: id (UUID), name, color (hex), sort_order
+- Default categories: Random Thoughts, School, Personal
 
-#### Login
-
-```bash
-curl -X POST http://localhost:8000/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "SecurePass123"
-  }'
-```
-
-#### Logout
-
-```bash
-curl -X POST http://localhost:8000/auth/logout/ \
-  -H "Content-Type: application/json" \
-  --cookie "sessionid=YOUR_SESSION_ID"
-```
+### Note
+- Fields: id (UUID), user, category, title, content, created_at, updated_at, last_edited_at
 
 ## Password Requirements
 
-Passwords must meet the following criteria:
-- At least 8 characters long
-- Contains at least one uppercase letter
-- Contains at least one lowercase letter
-- Contains at least one number
-
-## Development
-
-### Running Tests
-
-```bash
-python manage.py test
-```
-
-### Code Style
-
-This project follows PEP 8 guidelines with a 120 character line limit.
-
-## CORS Configuration
-
-CORS is configured to allow requests from `http://localhost:3000` by default.
-Update `CORS_ALLOWED_ORIGINS` in `.env` to add more origins.
-
-## Database
-
-The application uses an in-memory SQLite database. Data will be lost when the server stops.
-This is intentional for the MVP as specified in the requirements.
+Passwords must contain:
+- At least one capital letter
+- At least one lowercase letter
+- At least one number

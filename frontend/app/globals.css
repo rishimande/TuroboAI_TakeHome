@@ -1,9 +1,47 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Inter:wght@400;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #faf1e3;
+  --foreground: #000000;
+  --primary: #957139;
+  --primary-text: #88642a;
+  
+  /* Category colors */
+  --random-thoughts: #78aba8;
+  --random-thoughts-light: rgba(120, 171, 168, 0.5);
+  --school: #a8a378;
+  --school-light: rgba(168, 163, 120, 0.5);
+  --personal: #a878ab;
+  --personal-light: rgba(168, 120, 171, 0.5);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-text: var(--primary-text);
+  --color-random-thoughts: var(--random-thoughts);
+  --color-random-thoughts-light: var(--random-thoughts-light);
+  --color-school: var(--school);
+  --color-school-light: var(--school-light);
+  --color-personal: var(--personal);
+  --color-personal-light: var(--personal-light);
+  
+  --font-heading: "Inria Serif", serif;
+  --font-body: "Inter", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

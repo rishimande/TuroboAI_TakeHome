@@ -1,228 +1,144 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import {
-  authApi,
-  categoriesApi,
-  notesApi,
-  type User,
-  type Category,
-  type Note,
-  type NoteDetail,
-} from "@/lib/api-client";
-import WorkspaceLayout from "@/components/workspace/WorkspaceLayout";
-import CategoriesSidebar from "@/components/workspace/CategoriesSidebar";
-import NotesGrid from "@/components/workspace/NotesGrid";
-import NoteEditor from "@/components/workspace/NoteEditor";
+import { WorkspaceNavbar } from "@/components/notes/workspace-navbar";
+import { CategorySidebar } from "@/components/notes/category-sidebar";
+import { NotesGrid } from "@/components/notes/notes-grid";
+import { NoteEditor } from "@/components/notes/note-editor";
+import { getCategories, getNotes, createNote } from "@/lib/api";
+import type { Category, Note } from "@/types";
 
 export default function WorkspacePage() {
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [notesLoading, setNotesLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Note editor state
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [editingNote, setEditingNote] = useState<NoteDetail | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
-    async function initializeWorkspace() {
-      try {
-        // Check authentication
-        const currentUser = await authApi.getCurrentUser();
-        setUser(currentUser);
-
-        // Fetch categories
-        const fetchedCategories = await categoriesApi.getCategories();
-        setCategories(fetchedCategories);
-
-        // Fetch initial notes
-        const fetchedNotes = await notesApi.getNotes();
-        setNotes(fetchedNotes);
-      } catch (error) {
-        console.error("Initialization error:", error);
-        // If authentication fails, redirect to login
-        router.push("/login");
-      } finally {
-        setIsLoading(false);
-      }
+    if (!authLoading && !user) {
+      router.push("/signin");
     }
+  }, [user, authLoading, router]);
 
-    initializeWorkspace();
-  }, [router]);
-
-  // Fetch notes when category selection changes
   useEffect(() => {
-    async function fetchNotes() {
-      if (!user) return;
-
-      setNotesLoading(true);
-      try {
-        const fetchedNotes = await notesApi.getNotes(selectedCategoryId || undefined);
-        setNotes(fetchedNotes);
-      } catch (error) {
-        console.error("Error fetching notes:", error);
-        setError("Failed to load notes");
-      } finally {
-        setNotesLoading(false);
-      }
+    if (user) {
+      loadData();
     }
+  }, [user]);
 
-    if (!isLoading) {
-      fetchNotes();
-    }
-  }, [selectedCategoryId, user, isLoading]);
-
-  function handleCategorySelect(categoryId: string | null) {
-    setSelectedCategoryId(categoryId);
-    setError(null); // Clear any errors when switching categories
-  }
-
-  async function handleNoteClick(note: Note) {
+  async function loadData() {
+    setIsLoading(true);
     try {
-      // Fetch full note details before editing
-      const fullNote = await notesApi.getNote(note.id);
-      setEditingNote(fullNote);
-      setIsEditorOpen(true);
+      const [categoriesData, notesData] = await Promise.all([
+        getCategories(),
+        getNotes(),
+      ]);
+      setCategories(categoriesData);
+      setNotes(notesData);
     } catch (error) {
-      console.error("Error loading note:", error);
-      setError("Failed to load note");
+      console.error("Failed to load data:", error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
-  function handleNewNote() {
-    setEditingNote(null);
-    setIsEditorOpen(true);
+  async function handleCategorySelect(categoryId: string | null) {
+    setSelectedCategoryId(categoryId);
+    setIsLoading(true);
+    try {
+      const notesData = await getNotes(categoryId || undefined);
+      setNotes(notesData);
+    } catch (error) {
+      console.error("Failed to load notes:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleCreateNote() {
+    if (isCreating || categories.length === 0) return;
+
+    setIsCreating(true);
+    try {
+      const defaultCategory = categories[0];
+      const newNote = await createNote({
+        title: "Note Title:",
+        content: "",
+        category: defaultCategory.id,
+      });
+      setSelectedNote(newNote);
+      await loadData();
+    } catch (error) {
+      console.error("Failed to create note:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  }
+
+  function handleNoteClick(note: Note) {
+    setSelectedNote(note);
   }
 
   function handleCloseEditor() {
-    setIsEditorOpen(false);
-    setEditingNote(null);
+    setSelectedNote(null);
   }
 
-  async function handleSaveNote(noteData: {
-    id?: string;
-    category: string;
-    title: string;
-    content: string;
-  }) {
-    try {
-      if (noteData.id) {
-        // Update existing note
-        const updatedNote = await notesApi.updateNote(noteData.id, {
-          category: noteData.category,
-          title: noteData.title,
-          content: noteData.content,
-        });
-        setEditingNote(updatedNote);
-
-        // Update the note in the list
-        setNotes((prevNotes) =>
-          prevNotes.map((note) =>
-            note.id === updatedNote.id
-              ? {
-                  ...note,
-                  category: updatedNote.category,
-                  category_name: updatedNote.category_name,
-                  category_color: updatedNote.category_color,
-                  title: updatedNote.title,
-                  content: updatedNote.content,
-                  last_edited_at: updatedNote.last_edited_at,
-                }
-              : note
-          )
-        );
-      } else {
-        // Create new note
-        const newNote = await notesApi.createNote({
-          category: noteData.category,
-          title: noteData.title,
-          content: noteData.content,
-        });
-        setEditingNote(newNote);
-
-        // Add the new note to the list
-        const newNotePreview: Note = {
-          id: newNote.id,
-          category: newNote.category,
-          category_name: newNote.category_name,
-          category_color: newNote.category_color,
-          title: newNote.title,
-          content: newNote.content,
-          created_at: newNote.created_at,
-          last_edited_at: newNote.last_edited_at,
-        };
-
-        setNotes((prevNotes) => [newNotePreview, ...prevNotes]);
-      }
-    } catch (error) {
-      console.error("Error saving note:", error);
-      throw error;
-    }
+  async function handleSaveNote() {
+    await loadData();
   }
 
-  if (isLoading) {
+  if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen bg-[#faf1e3] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-600">Loading workspace...</p>
+          <div className="w-16 h-16 border-4 border-[#957139] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[#88642a]">Loading...</p>
         </div>
       </div>
     );
   }
 
-  if (!user) return null;
-
-  // Get selected category name for empty state
-  const selectedCategory = selectedCategoryId
-    ? categories.find((cat) => cat.id === selectedCategoryId)
-    : null;
-
   return (
-    <>
-      <WorkspaceLayout
-        user={user}
-        onNewNote={handleNewNote}
-        sidebar={
-          <CategoriesSidebar
-            categories={categories}
-            selectedCategoryId={selectedCategoryId}
-            onCategorySelect={handleCategorySelect}
-          />
-        }
-      >
-        {/* Notes Grid Area */}
-        <div className="p-8">
-          {error ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-              <p className="font-medium">Error loading notes</p>
-              <p className="text-sm mt-1">{error}</p>
+    <div className="min-h-screen bg-[#faf1e3] flex flex-col">
+      {/* Top Navbar */}
+      <WorkspaceNavbar 
+        onCreateNote={handleCreateNote} 
+        isCreating={isCreating}
+      />
+
+      {/* Main content area with sidebar and notes grid */}
+      <div className="flex flex-1">
+        <CategorySidebar
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+          onSelectCategory={handleCategorySelect}
+        />
+
+        <main className="flex-1 overflow-auto">
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="w-16 h-16 border-4 border-[#957139] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
-            <NotesGrid
-              notes={notes}
-              isLoading={notesLoading}
-              categoryName={selectedCategory?.name}
-              onNoteClick={handleNoteClick}
-            />
+            <NotesGrid notes={notes} onNoteClick={handleNoteClick} />
           )}
-        </div>
-      </WorkspaceLayout>
+        </main>
+      </div>
 
-      {/* Note Editor Modal */}
-      <NoteEditor
-        note={editingNote}
-        categories={categories}
-        isOpen={isEditorOpen}
-        onClose={handleCloseEditor}
-        onSave={handleSaveNote}
-      />
-    </>
+      {selectedNote && (
+        <NoteEditor
+          note={selectedNote}
+          categories={categories}
+          onClose={handleCloseEditor}
+          onSave={handleSaveNote}
+        />
+      )}
+    </div>
   );
 }

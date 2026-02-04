@@ -1,232 +1,165 @@
-# Notes App Frontend
+# Notes App - Frontend
 
-Next.js 15 frontend for the Notes App with TypeScript and Tailwind CSS.
+Next.js 15 frontend for the Notes Taking Application.
 
 ## Tech Stack
 
-- **Next.js:** 15.x (App Router)
-- **React:** 18.x
-- **TypeScript:** Latest
-- **Tailwind CSS:** Latest
-- **Form Handling:** React Hook Form + Zod
-- **API Client:** Axios
-
-## Features
-
-### ✅ Slice 1 - Authentication (Complete)
-
-- Sign Up page with validation
-- Sign In page
-- Protected workspace route
-- Form validation (email format, password requirements)
-- API integration with Django backend
-- Session-based authentication with cookies
-- CSRF token handling
-
-## Setup Instructions
-
-### 1. Install Dependencies
-
-```bash
-npm install
-```
-
-### 2. Environment Configuration
-
-Copy the example environment file:
-
-```bash
-cp .env.example .env.local
-```
-
-Update `.env.local` with your configuration:
-
-```
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-### 3. Run Development Server
-
-```bash
-npm run dev
-```
-
-The app will be available at `http://localhost:3000`
+- React 18
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- Axios
+- date-fns
 
 ## Project Structure
 
 ```
-frontend/
+.
 ├── app/                    # Next.js App Router
-│   ├── page.tsx           # Home page
-│   ├── layout.tsx         # Root layout
-│   ├── globals.css        # Global styles
-│   ├── signup/            # Sign Up page
-│   ├── login/             # Sign In page
-│   └── workspace/         # Protected workspace
-├── components/            # Reusable components
-│   └── ui/               # UI components
+│   ├── layout.tsx         # Root layout with AuthProvider
+│   ├── page.tsx           # Home page (redirects to signin)
+│   ├── signup/            # Sign up page
+│   ├── signin/            # Sign in page
+│   └── workspace/         # Main notes workspace
+│
+├── components/
+│   ├── auth/              # Authentication components
+│   │   ├── signin-form.tsx
+│   │   └── signup-form.tsx
+│   ├── notes/             # Note-related components
+│   │   ├── category-sidebar.tsx
+│   │   ├── note-card.tsx
+│   │   ├── note-editor.tsx
+│   │   └── notes-grid.tsx
+│   └── ui/                # Base UI components
 │       ├── button.tsx
-│       └── input.tsx
-├── lib/                   # Utilities and services
-│   ├── api-client.ts     # API service
-│   ├── validations.ts    # Form schemas
-│   └── utils.ts          # Utility functions
-├── .env.local            # Environment variables
-└── package.json          # Dependencies
+│       ├── input.tsx
+│       └── textarea.tsx
+│
+├── lib/
+│   ├── api.ts             # API client with Axios
+│   ├── auth-context.tsx   # Authentication context
+│   ├── design-tokens.ts   # Design system tokens
+│   └── utils.ts           # Utility functions
+│
+└── types/
+    └── index.ts           # TypeScript type definitions
 ```
 
-## Available Routes
+## Features
 
-| Route | Description | Auth Required |
-|-------|-------------|---------------|
-| `/` | Home page | No |
-| `/signup` | User registration | No |
-| `/login` | User login | No |
-| `/workspace` | Notes workspace | Yes |
+### Authentication
+- Sign up with email validation and password strength checking
+- Sign in with session-based authentication
+- Protected routes with automatic redirection
 
-## Form Validation
+### Notes Workspace
+- Category sidebar with note counts
+- Responsive grid layout for note cards
+- Category-based color theming
+- Empty state with friendly message
 
-### Sign Up
+### Note Editor
+- Modal overlay with backdrop
+- Category dropdown selector
+- Autosave functionality (1s debounce)
+- Real-time last edited timestamp
+- Keyboard shortcuts (Escape to close)
 
-**Email:**
-- Required field
-- Valid email format
+### Design System
+- Extracted Figma design tokens
+- Custom fonts (Inria Serif, Inter)
+- Category-based color schemes
+- Consistent spacing and sizing
 
-**Password:**
-- Minimum 8 characters
-- At least one uppercase letter (A-Z)
-- At least one lowercase letter (a-z)
-- At least one number (0-9)
+## Environment Variables
 
-### Sign In
+Create a `.env.local` file:
 
-**Email:**
-- Required field
-- Valid email format
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+```
 
-**Password:**
-- Required field
-
-## API Integration
-
-The frontend communicates with the Django backend using Axios with the following features:
-
-- Session-based authentication with cookies
-- Automatic CSRF token handling
-- Error handling and display
-- Request/response interceptors
-
-### API Endpoints Used
-
-- `POST /auth/signup/` - User registration
-- `POST /auth/login/` - User login
-- `POST /auth/logout/` - User logout
-- `GET /auth/me/` - Get current user
-
-## Development Scripts
+## Scripts
 
 ```bash
-# Start development server
+# Development server
 npm run dev
 
 # Build for production
 npm run build
 
 # Start production server
-npm start
+npm run start
 
-# Run linter
+# Lint code
 npm run lint
 ```
 
-## Key Libraries
+## Design Tokens
 
-- **axios** - HTTP client for API requests
-- **react-hook-form** - Form state management
-- **zod** - Schema validation
-- **@hookform/resolvers** - Form validation integration
-- **tailwind-merge** - Tailwind class merging
-- **clsx** - Conditional className utility
+All design values are centralized in `lib/design-tokens.ts`:
+- Colors (primary, category colors, backgrounds)
+- Typography (fonts, sizes)
+- Spacing
+- Border radius
+- Shadows
 
-## Environment Variables
+## Key Components
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:8000` |
+### AuthProvider
+Provides authentication context throughout the app with user state management.
 
-## Design System
+### CategorySidebar
+Displays all categories with note counts and handles category filtering.
 
-The app uses a clean, modern design with:
+### NoteCard
+Preview card for notes with category theming and truncated content.
 
-- **Colors:** Blue primary, neutral grays
-- **Typography:** System fonts with -apple-system fallback
-- **Spacing:** Consistent padding and margins
-- **Responsive:** Mobile-first approach
+### NoteEditor
+Full-featured modal editor with:
+- Autosave on typing
+- Category change handling
+- Close on backdrop click or Escape key
+- Real-time save status indicator
 
-## Authentication Flow
+## Utilities
 
-1. User fills out sign up/login form
-2. Frontend validates input using Zod schemas
-3. Request sent to Django backend with credentials
-4. Backend returns session cookie on success
-5. Frontend stores session cookie automatically
-6. Protected routes check authentication status
-7. Redirects to login if not authenticated
+### Date Formatting
+- `formatFriendlyDate()` - Returns "today", "yesterday", or "Month Day"
+- `formatLastEdited()` - Full timestamp format
 
-## Error Handling
+### Validation
+- `isValidEmail()` - Email format validation
+- `validatePassword()` - Password strength checking
 
-The app handles errors gracefully:
+### Debounce
+- `debounce()` - Function debouncing for autosave
 
-- Form validation errors shown inline
-- Server errors displayed above forms
-- Network errors caught and displayed
-- Redirects on authentication failures
+## API Integration
 
-## Next Steps (Slice 2+)
+The frontend uses Axios with:
+- CSRF token handling
+- Cookie-based sessions
+- Automatic token extraction from cookies
+- Error handling
 
-- Notes CRUD functionality
-- Categories sidebar
-- Note editor with autosave
-- Category filtering
-- Empty states
-- Loading states
+## Responsive Design
 
-## Styling Guidelines
+- Mobile-first approach
+- Grid layout adapts to screen size
+- Touch-friendly interactions
+- Keyboard navigation support
 
-- Use Tailwind CSS utility classes
-- Mobile-first responsive design
-- Consistent color palette
-- Accessible focus states
-- Smooth transitions
+## Accessibility
 
-## Code Style
-
-- TypeScript for all files
-- Functional components
-- Named exports for components
-- Interfaces over types
-- Descriptive variable names
-- Comments for complex logic
-
-## Testing
-
-To test the authentication flow:
-
-1. Start the backend server (`cd backend && python manage.py runserver`)
-2. Start the frontend server (`npm run dev`)
-3. Navigate to `http://localhost:3000`
-4. Click "Get Started" or "Sign In"
-5. Create an account or log in
-6. Verify redirect to workspace
+- ARIA labels on interactive elements
+- Keyboard navigation (Tab, Enter, Escape)
+- Focus visible states
+- Screen reader friendly
 
 ## Browser Support
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-## License
-
-This project is part of a take-home assignment for TurboAI.
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- ES6+ features
+- CSS Grid and Flexbox
