@@ -162,6 +162,58 @@ Get details of the currently authenticated user.
 
 ---
 
+## Categories
+
+### List Categories
+
+Get all categories ordered by sort_order.
+
+**Endpoint:** `GET /categories/`
+
+**Headers Required:**
+- Session cookie must be present (user must be authenticated)
+
+**Success Response (200 OK):**
+
+```json
+[
+  {
+    "id": "ac0f0d0a-38c9-4246-b745-f2931e63d3ca",
+    "name": "Random Thoughts",
+    "color": "#FFA07A",
+    "sort_order": 1,
+    "created_at": "2026-02-04T13:55:15.408462Z",
+    "updated_at": "2026-02-04T13:55:15.408543Z"
+  },
+  {
+    "id": "bf17fba2-5ad2-4096-9ecf-78aaf9bd51cb",
+    "name": "School",
+    "color": "#87CEEB",
+    "sort_order": 2,
+    "created_at": "2026-02-04T13:55:15.409561Z",
+    "updated_at": "2026-02-04T13:55:15.409570Z"
+  },
+  {
+    "id": "ee8d58d4-574e-4f81-9ae6-f34012c38600",
+    "name": "Personal",
+    "color": "#98FB98",
+    "sort_order": 3,
+    "created_at": "2026-02-04T13:55:15.411140Z",
+    "updated_at": "2026-02-04T13:55:15.411149Z"
+  }
+]
+```
+
+**Error Response (403 Forbidden):**
+
+```json
+{
+  "detail": "Authentication credentials were not provided."
+}
+```
+
+---
+
 ## CORS Configuration
 
 The backend is configured to accept requests from:
@@ -255,7 +307,14 @@ To use an in-memory database (data will be lost on server restart):
 Run the test suite:
 
 ```bash
+# Test authentication
 python manage.py test users
+
+# Test categories
+python manage.py test categories
+
+# Test all
+python manage.py test
 ```
 
 ### Admin Interface

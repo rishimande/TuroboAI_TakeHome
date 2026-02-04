@@ -40,13 +40,21 @@ Update `.env` with your configuration if needed.
 python manage.py migrate
 ```
 
-### 5. Create Superuser (Optional)
+### 5. Seed Default Categories
+
+```bash
+python manage.py seed_categories
+```
+
+This creates the default categories: Random Thoughts, School, and Personal.
+
+### 6. Create Superuser (Optional)
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 6. Run Development Server
+### 7. Run Development Server
 
 ```bash
 python manage.py runserver
@@ -62,6 +70,10 @@ The API will be available at `http://localhost:8000`
 - `POST /auth/login/` - Log in an existing user
 - `POST /auth/logout/` - Log out the current user
 - `GET /auth/me/` - Get current user details
+
+### Categories
+
+- `GET /categories/` - List all categories (requires authentication)
 
 ### Example Requests
 

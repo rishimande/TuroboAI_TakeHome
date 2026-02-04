@@ -1,108 +1,114 @@
-# Notes App - TurboAI Take Home Assignment
+# Notes App - TurboAI Take-Home
 
-A category-based notes web application with a clean, calming UI.
-
-## Project Overview
-
-This is a full-stack web application built as part of the TurboAI take-home assignment. The project follows a phased development approach with clear separation between backend and frontend.
-
-### Tech Stack
-
-- **Backend:** Python 3.12 + Django 4.2 LTS
-- **Frontend:** React 18.x + Next.js 15 (Coming in Slice 2)
-- **Database:** SQLite (in-memory option available)
-- **API:** REST with Django REST Framework
+A category-based notes web application built with Django and Next.js.
 
 ## Project Status
 
-### ✅ Slice 1: Project Setup & Authentication Foundation - COMPLETE
+- ✅ **Slice 1:** Authentication Foundation - Complete
+- ✅ **Slice 2:** Category System - Complete (Backend + Frontend)
+- 📋 **Slice 3:** Notes Functionality - Pending
 
-Both backend and frontend are fully implemented with complete authentication!
+## Tech Stack
 
-#### Backend Features
-- ✅ Django project initialized with SQLite
-- ✅ Custom user model with UUID primary keys
-- ✅ Authentication endpoints (signup, login, logout)
-- ✅ Password validation (uppercase, lowercase, number requirements)
-- ✅ Email validation
-- ✅ CORS configuration for frontend integration
-- ✅ Comprehensive test suite (12/12 tests passing)
-- ✅ API documentation
+### Backend
+- Python 3.12
+- Django 4.2 LTS
+- Django REST Framework
+- SQLite Database
 
-**Backend Server:** Running at `http://localhost:8000`
-
-#### Frontend Features
-- ✅ Next.js 15 project initialized with TypeScript
-- ✅ Authentication pages (Sign Up, Sign In)
-- ✅ Form validation (client-side with Zod)
-- ✅ API integration with backend
-- ✅ Protected workspace route
-- ✅ Responsive design with Tailwind CSS
-- ✅ Session-based authentication with cookies
-- ✅ No linting errors
-
-**Frontend Server:** Running at `http://localhost:3000`
-
-See [SLICE_1_COMPLETE.md](./SLICE_1_COMPLETE.md) for details.
-
-### 🔄 Next Slices
-
-- **Slice 2:** Notes CRUD + Categories
-- **Slice 3:** Note editor with autosave
-- **Slice 4:** Polish and refinements
+### Frontend
+- Next.js 15 (App Router)
+- React 18.x
+- TypeScript 5.x
+- Tailwind CSS 3.x
 
 ## Quick Start
 
-### 1. Backend Setup
+### Backend
 
 ```bash
 cd backend
 
-# Automated setup
+# Setup (first time only)
 ./setup.sh
 
 # Or manually
-python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
 python manage.py migrate
+python manage.py seed_categories
 python manage.py runserver
 ```
 
-The backend API will be available at `http://localhost:8000`
+Backend runs at: **http://localhost:8000**
 
-### 2. Frontend Setup
+### Frontend
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:3000`
+Frontend runs at: **http://localhost:3000**
 
-### 3. Test the Application
+## Features Implemented
 
-1. Open http://localhost:3000 in your browser
-2. Click "Get Started" to create an account
-3. Fill out the sign-up form with valid credentials
-4. You'll be redirected to the workspace
-5. Try logging out and signing back in
+### Authentication (Slice 1)
+- User registration with email validation
+- Password validation (uppercase, lowercase, number required)
+- Session-based authentication
+- Protected routes
+- Login/Logout functionality
 
-### Run Tests
-
+### Categories (Slice 2)
 **Backend:**
+- Category model with UUID, name, color, sort_order
+- Three default categories seeded:
+  - Random Thoughts (#FFA07A)
+  - School (#87CEEB)
+  - Personal (#98FB98)
+- GET /categories/ API endpoint
+- Authentication required for access
+- Comprehensive test coverage
+
+**Frontend:**
+- Authenticated workspace layout with sidebar
+- Categories sidebar component
+- "All Categories" view
+- Category color indicators
+- Category selection and filtering
+- Empty state component
+
+## API Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/auth/signup/` | Register new user | No |
+| POST | `/auth/login/` | Login user | No |
+| POST | `/auth/logout/` | Logout user | Yes |
+| GET | `/auth/me/` | Get current user | Yes |
+| GET | `/categories/` | List all categories | Yes |
+
+## Testing
+
+### Backend Tests
+
 ```bash
 cd backend
 source venv/bin/activate
-python manage.py test users
+
+# Run all tests
+python manage.py test
+
+# Run specific app tests
+python manage.py test users      # 12 tests
+python manage.py test categories  # 8 tests
 ```
 
-**Frontend:**
+**Current Status:** ✅ 20/20 tests passing
+
+### Frontend
+
 ```bash
 cd frontend
 npm run lint
@@ -111,99 +117,71 @@ npm run lint
 ## Documentation
 
 - **Project Specifications:** [specifications.md](./specifications.md)
-- **Slice 1 Complete:** [SLICE_1_COMPLETE.md](./SLICE_1_COMPLETE.md)
-- **Backend README:** [backend/README.md](./backend/README.md)
 - **Backend API:** [backend/API_DOCUMENTATION.md](./backend/API_DOCUMENTATION.md)
-- **Frontend README:** [frontend/README.md](./frontend/README.md)
+- **Backend Setup:** [backend/README.md](./backend/README.md)
+- **Frontend Setup:** [frontend/README.md](./frontend/README.md)
+- **Slice 1 Completion:** [SLICE_1_COMPLETE.md](./SLICE_1_COMPLETE.md)
+- **Slice 2 Completion:** [SLICE_2_COMPLETE.md](./SLICE_2_COMPLETE.md)
+- **Slice 2 Backend Details:** [SLICE_2_BACKEND_COMPLETE.md](./SLICE_2_BACKEND_COMPLETE.md)
+- **Slice 2 Frontend Details:** [SLICE_2_FRONTEND_COMPLETE.md](./SLICE_2_FRONTEND_COMPLETE.md)
+
+## Development Workflow
+
+### Slice Implementation Order
+
+1. ✅ **Slice 1:** Project Setup & Authentication
+   - Django backend setup
+   - Next.js frontend setup
+   - User authentication (signup, login, logout)
+   - Session management
+
+2. ✅ **Slice 2:** Category System
+   - Backend: Category model, API endpoints, seeding
+   - Frontend: Workspace layout, categories sidebar
+
+3. 📋 **Slice 3:** Notes Functionality (Planned)
+   - Notes CRUD operations
+   - Note editor with autosave
+   - Category-based filtering
+   - Note preview cards
+
+4. 📋 **Slice 4:** Polish & Refinements (Planned)
+   - Empty states
+   - Loading states
+   - Error boundaries
+   - Responsive design
+   - Performance optimizations
 
 ## Project Structure
 
 ```
 TurboAI_TakeHome/
-├── backend/                    # Django backend (✅ Complete)
-│   ├── config/                # Django project settings
-│   ├── users/                 # User authentication app
-│   ├── requirements.txt       # Python dependencies
-│   ├── setup.sh              # Setup script
-│   └── README.md             # Backend documentation
-├── frontend/                  # Next.js frontend (✅ Complete)
-│   ├── app/                  # App Router pages
-│   ├── components/           # Reusable components
-│   ├── lib/                  # Utilities & API client
-│   ├── package.json          # Dependencies
-│   └── README.md             # Frontend documentation
-├── specifications.md          # Product requirements
-├── SLICE_1_COMPLETE.md       # Slice 1 summary
-└── README.md                  # This file
+├── backend/                      # Django Backend
+│   ├── config/                  # Project settings
+│   ├── users/                   # Authentication app ✅
+│   ├── categories/              # Categories app ✅
+│   ├── requirements.txt
+│   └── README.md
+│
+├── frontend/                    # Next.js Frontend
+│   ├── app/                    # App Router pages
+│   │   ├── login/              # Login page ✅
+│   │   ├── signup/             # Signup page ✅
+│   │   └── workspace/          # Workspace page ✅
+│   ├── components/             # React components
+│   │   ├── ui/                 # UI components ✅
+│   │   └── workspace/          # Workspace components ✅
+│   ├── lib/                    # Utilities ✅
+│   └── package.json
+│
+├── specifications.md           # Product requirements
+├── README.md                  # This file
+└── *.md                       # Completion documents
 ```
-
-## API Endpoints & Routes
-
-### Backend API Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/auth/signup/` | Register new user | No |
-| POST | `/auth/login/` | Login user | No |
-| POST | `/auth/logout/` | Logout user | Yes |
-| GET | `/auth/me/` | Get current user | Yes |
-
-### Frontend Routes
-
-| Route | Description | Auth Required |
-|-------|-------------|---------------|
-| `/` | Home/landing page | No |
-| `/signup` | Sign Up page | No |
-| `/login` | Sign In page | No |
-| `/workspace` | Protected workspace | Yes |
-
-### Coming in Slice 2
-
-- Notes CRUD operations
-- Categories management
-- Note editor
-
-## Design Reference
-
-Figma Design: [Notes Taking App](https://www.figma.com/design/xZRv2eg3nnJgtmSVXNQKxs/Notes-Taking-App-Challenge--Copy-?node-id=0-1&p=f&m=dev)
-
-The Figma design is the source of truth for:
-- Layout and spacing
-- Typography and colors
-- Component states
-- Interaction patterns
-
-## Development Guidelines
-
-This project follows established coding standards:
-
-- **Backend:** See [.cursor/rules/django-backend.mdc](./.cursor/rules/django-backend.mdc)
-- **Frontend:** See [.cursor/rules/nextjs-react.mdc](./.cursor/rules/nextjs-react.mdc)
-
-## Testing Strategy
-
-### Backend Testing
-
-- Unit tests for models
-- Integration tests for API endpoints
-- Password and email validation tests
-- Authentication flow tests
-
-**Current Status:** 12/12 tests passing ✅
-
-## Security Features
-
-- Secure password hashing (PBKDF2)
-- Session-based authentication
-- CSRF protection
-- HTTP-only cookies
-- CORS configuration
-- Input validation and sanitization
 
 ## Environment Configuration
 
-The backend uses environment variables for configuration:
-
+### Backend (.env)
 ```bash
 SECRET_KEY=your-secret-key
 DEBUG=True
@@ -212,25 +190,57 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000
 USE_IN_MEMORY_DB=False
 ```
 
-Copy `.env.example` to `.env` and update as needed.
+### Frontend (.env.local)
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
-## Contributing
+## Contributing Guidelines
 
-This is a take-home assignment project. Development follows the phased approach outlined in the specifications.
+### Code Style
+
+**Backend (Python):**
+- Follow PEP 8 (120 character line limit)
+- Use double quotes for strings
+- Use f-strings for formatting
+- Add docstrings to all classes and functions
+
+**Frontend (TypeScript/React):**
+- Follow Next.js conventions
+- Use TypeScript for type safety
+- Use functional components with hooks
+- Use Tailwind CSS for styling
+
+### Testing Requirements
+
+- All new features must include tests
+- Tests must pass before merging
+- Aim for high code coverage
+- Test both positive and negative cases
+
+## Security
+
+- Session-based authentication with HTTP-only cookies
+- CSRF protection enabled
+- Password hashing with PBKDF2
+- Input validation on both frontend and backend
+- CORS configured for frontend origin
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
 
 ## License
 
 This project is part of a take-home assignment for TurboAI.
 
+## Design Reference
+
+Figma Design: [Notes Taking App](https://www.figma.com/design/xZRv2eg3nnJgtmSVXNQKxs/Notes-Taking-App-Challenge--Copy-?node-id=0-1&p=f&m=dev)
+
 ---
 
-**Current Status:** Slice 1 (Authentication Foundation) Complete ✅
-
-**Both Servers Running:**
-- Backend: http://localhost:8000
-- Frontend: http://localhost:3000
-
-**Next Steps (Slice 2):** 
-1. Notes CRUD functionality
-2. Categories system
-3. Note editor with autosave
+**Last Updated:** February 4, 2026

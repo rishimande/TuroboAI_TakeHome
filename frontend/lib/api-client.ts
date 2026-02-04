@@ -63,6 +63,16 @@ export interface AuthResponse {
   user: User;
 }
 
+// Category types
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 // Authentication API functions
 export const authApi = {
   // Sign up a new user
@@ -86,6 +96,15 @@ export const authApi = {
   // Get current user
   getCurrentUser: async (): Promise<User> => {
     const response = await apiClient.get<User>("/auth/me/");
+    return response.data;
+  },
+};
+
+// Categories API functions
+export const categoriesApi = {
+  // Get all categories
+  getCategories: async (): Promise<Category[]> => {
+    const response = await apiClient.get<Category[]>("/categories/");
     return response.data;
   },
 };
